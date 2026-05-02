@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bible Pronunciation — 聖書英語発音練習</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Sans+JP:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f7f3eb;
+    --bg2: #eee8d8;
+    --bg3: #e5ddc8;
+    --text: #2c2416;
+    --text2: #6b5c3e;
+    --text3: #a8956e;
+    --gold: #c8922a;
+    --gold-dim: rgba(200,146,42,0.12);
+    --green: #3a7d44;
+    --green-dim: rgba(58,125,68,0.12);
+    --red: #b94040;
+    --red-dim: rgba(185,64,64,0.10);
+    --blue: #2a5a8c;
+    --border: rgba(100,80,40,0.15);
+    --border2: rgba(100,80,40,0.25);
+    --shadow: 0 2px 12px rgba(44,36,22,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 0%, rgba(200,146,42,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 100%, rgba(58,125,68,0.05) 0%, transparent 60%);
+  }
+
+  header {
+    padding: 20px 28px 16px;
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(247,243,235,0.9);
+    backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 10;
+  }
+
+  .logo {
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .logo-en {
+    font-family: 'EB Garamond', serif;
+    font-size: 22px; font-weight: 500;
+    color: var(--text); letter-spacing: 0.03em;
+  }
+  .logo-ja {
+    font-size: 11px; color: var(--text3); letter-spacing: 0.08em;
+  }
+  .cross {
+    font-size: 20px; color: var(--gold); opacity: 0.7; margin-right: 10px;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .progress-text { font-size: 12px; color: var(--text3); font-family: 'EB Garamond', serif; }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* 書籍セレクタ */
+  .book-bar {
+    display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .book-btn {
+    font-size: 12px; padding: 5px 14px; border-radius: 999px;
+    border: 1px solid var(--border2); background: transparent;
+    color: var(--text2); cursor: pointer; font-family: 'EB Garamond', serif;
+    transition: all 0.15s;
+  }
+  .book-btn:hover { background: var(--bg2); }
+  .book-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
+
+  /* メインカード */
+  .verse-card {
+    background: white;
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .verse-header {
+    padding: 14px 20px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .verse-ref {
+    font-family: 'EB Garamond', serif;
+    font-size: 15px; font-weight: 500; color: var(--gold);
+    letter-spacing: 0.04em;
+  }
+  .verse-nav { display: flex; gap: 6px; }
+  .nav-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--border2); background: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--text2); transition: all 0.15s;
+  }
+  .nav-btn:hover { background: var(--bg2); }
+
+  .verse-body { padding: 28px 24px 20px; }
+  .verse-en {
+    font-family: 'EB Garamond', serif;
+    font-size: 22px; line-height: 1.8; color: var(--text);
+    margin-bottom: 12px; letter-spacing: 0.01em;
+  }
+  .verse-en .word {
+    display: inline;
+    border-radius: 3px;
+    padding: 0 1px;
+    transition: background 0.2s;
+  }
+  .verse-en .word.correct { background: rgba(58,125,68,0.18); color: var(--green); }
+  .verse-en .word.wrong { background: rgba(185,64,64,0.12); color: var(--red); text-decoration: underline wavy var(--red); }
+
+  .verse-ja {
+    font-size: 13px; color: var(--text3); line-height: 1.7;
+    border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px;
+  }
+
+  /* 録音コントロール */
+  .record-area {
+    padding: 20px 24px 24px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+
+  .mic-btn {
+    width: 68px; height: 68px; border-radius: 50%; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: transform 0.12s, box-shadow 0.2s;
+    position: relative;
+  }
+  .mic-btn:active { transform: scale(0.93); }
+  .mic-btn.idle { background: var(--gold); box-shadow: 0 4px 16px rgba(200,146,42,0.3); }
+  .mic-btn.recording { background: var(--red); animation: rpulse 1.4s infinite; }
+  .mic-btn.done { background: var(--green); }
+  @keyframes rpulse {
+    0%,100%{ box-shadow: 0 0 0 0 rgba(185,64,64,0.4); }
+    60%{ box-shadow: 0 0 0 14px rgba(185,64,64,0); }
+  }
+
+  .mic-hint { font-size: 12px; color: var(--text3); }
+
+  /* 聞き取り結果 */
+  .heard-text {
+    font-family: 'EB Garamond', serif;
+    font-size: 16px; color: var(--text2); font-style: italic;
+    min-height: 24px; text-align: center; padding: 0 20px;
+  }
+
+  /* スコア */
+  .score-area {
+    width: 100%; display: none;
+  }
+  .score-bar-wrap {
+    background: var(--bg2); border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 6px;
+  }
+  .score-bar {
+    height: 100%; border-radius: 999px;
+    transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+    background: linear-gradient(90deg, var(--gold), var(--green));
+  }
+  .score-label {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .score-pct {
+    font-family: 'EB Garamond', serif;
+    font-size: 28px; font-weight: 500; color: var(--text);
+  }
+  .score-msg { font-size: 12px; color: var(--text3); }
+
+  /* 履歴 */
+  .history-section { margin-top: 8px; }
+  .history-title {
+    font-size: 11px; color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 10px;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px;
+  }
+  .history-ref { color: var(--gold); font-family: 'EB Garamond', serif; font-size: 14px; }
+  .history-score {
+    font-family: 'EB Garamond', serif; font-size: 18px; font-weight: 500;
+  }
+  .history-score.hi { color: var(--green); }
+  .history-score.mid { color: var(--gold); }
+  .history-score.lo { color: var(--red); }
+
+  .err-box { font-size: 12px; color: var(--red); background: var(--red-dim); border: 1px solid rgba(185,64,64,0.2); padding: 7px 12px; border-radius: 8px; text-align: center; display: none; }
+
+  .tts-btn {
+    font-size: 12px; color: var(--blue); background: rgba(42,90,140,0.08);
+    border: 1px solid rgba(42,90,140,0.2); border-radius: 999px;
+    padding: 4px 14px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    transition: background 0.15s;
+  }
+  .tts-btn:hover { background: rgba(42,90,140,0.14); }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center">
+    <span class="cross">✝</span>
+    <div class="logo">
+      <span class="logo-en">Bible Pronunciation</span>
+      <span class="logo-ja">聖書英語 発音練習</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="progress-text" id="progress-text">0 回練習</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 書籍選択 -->
+  <div class="book-bar" id="book-bar"></div>
+
+  <!-- 聖句カード -->
+  <div class="verse-card">
+    <div class="verse-header">
+      <span class="verse-ref" id="verse-ref">—</span>
+      <div class="verse-nav">
+        <button class="nav-btn" onclick="prevVerse()">←</button>
+        <button class="tts-btn" onclick="speakVerse()">🔊 お手本</button>
+        <button class="nav-btn" onclick="nextVerse()">→</button>
+      </div>
+    </div>
+    <div class="verse-body">
+      <div class="verse-en" id="verse-en">—</div>
+      <div class="verse-ja" id="verse-ja">—</div>
+    </div>
+
+    <div class="record-area">
+      <div class="err-box" id="err-box"></div>
+      <button class="mic-btn idle" id="mic-btn" onclick="toggleRec()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill="white"/>
+          <path d="M5 11a7 7 0 0014 0" stroke="white" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="12" y1="18" x2="12" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="8" y1="22" x2="16" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="mic-hint" id="mic-hint">タップして発音練習を開始</span>
+      <div class="heard-text" id="heard-text"></div>
+
+      <div class="score-area" id="score-area">
+        <div class="score-label">
+          <span class="score-pct" id="score-pct">0%</span>
+          <span class="score-msg" id="score-msg"></span>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-bar" id="score-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 履歴 -->
+  <div class="history-section">
+    <div class="history-title">練習履歴</div>
+    <div class="history-list" id="history-list">
+      <div style="font-size:13px;color:var(--text3);text-align:center;padding:16px">まだ練習していません</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 聖書データ（書籍・節）
+const BIBLE = {
+  "John": [
+    { ref: "John 3:16", en: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.", ja: "神はそのひとり子をお与えになったほど、世を愛された。それは御子を信じる者が、一人も滅びないで永遠の命を持つためである。" },
+    { ref: "John 1:1", en: "In the beginning was the Word, and the Word was with God, and the Word was God.", ja: "初めに言葉があった。言葉は神と共にあった。言葉は神であった。" },
+    { ref: "John 14:6", en: "Jesus answered, I am the way and the truth and the life. No one comes to the Father except through me.", ja: "イエスは言われた。「わたしは道であり、真理であり、命である。わたしを通らなければ、だれも父のもとに行くことができない。」" },
+    { ref: "John 11:35", en: "Jesus wept.", ja: "イエスは涙を流された。" },
+    { ref: "John 8:32", en: "Then you will know the truth, and the truth will set you free.", ja: "あなたたちは真理を知り、真理はあなたたちを自由にする。" },
+  ],
+  "Psalms": [
+    { ref: "Psalm 23:1", en: "The Lord is my shepherd, I lack nothing.", ja: "主は羊飼い、わたしには何も欠けることがない。" },
+    { ref: "Psalm 46:1", en: "God is our refuge and strength, an ever present help in trouble.", ja: "神はわたしたちの避けどころ、わたしたちの力。苦難のとき、必ずそこにいます助け手。" },
+    { ref: "Psalm 119:105", en: "Your word is a lamp for my feet, a light on my path.", ja: "あなたの御言葉はわたしの道の光、わたしの歩みを照らす灯。" },
+    { ref: "Psalm 27:1", en: "The Lord is my light and my salvation, whom shall I fear?", ja: "主はわたしの光、わたしの救い。わたしは誰を恐れよう。" },
+  ],
+  "Proverbs": [
+    { ref: "Proverbs 3:5", en: "Trust in the Lord with all your heart and lean not on your own understanding.", ja: "心を尽くして主に信頼し、自分の分別には頼らず。" },
+    { ref: "Proverbs 3:6", en: "In all your ways submit to him, and he will make your paths straight.", ja: "常に主を覚えてあなたの道を歩けば、主はあなたの道筋をまっすぐにしてくださる。" },
+    { ref: "Proverbs 16:3", en: "Commit to the Lord whatever you do, and he will establish your plans.", ja: "主に向かって、あなたのすることを委ねよ。そうすれば、あなたの計画は確立される。" },
+  ],
+  "Matthew": [
+    { ref: "Matthew 5:3", en: "Blessed are the poor in spirit, for theirs is the kingdom of heaven.", ja: "心の貧しい人々は、幸いである、天の国はその人たちのものである。" },
+    { ref: "Matthew 6:9", en: "Our Father in heaven, hallowed be your name.", ja: "天におられるわたしたちの父よ、御名が崇められますように。" },
+    { ref: "Matthew 11:28", en: "Come to me, all you who are weary and burdened, and I will give you rest.", ja: "疲れた者、重荷を負う者は、だれでもわたしのもとに来なさい。休ませてあげよう。" },
+    { ref: "Matthew 28:19", en: "Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit.", ja: "だから、あなたがたは行って、すべての民をわたしの弟子にしなさい。彼らに父と子と聖霊の名によって洗礼を授け。" },
+  ],
+  "Romans": [
+    { ref: "Romans 8:28", en: "And we know that in all things God works for the good of those who love him.", ja: "神を愛する者たち、つまり、御計画に従って召された者たちには、万事が益となるように共に働く。" },
+    { ref: "Romans 12:2", en: "Do not conform to the pattern of this world, but be transformed by the renewing of your mind.", ja: "あなたがたはこの世に倣ってはなりません。むしろ、心を新たにして自分を変えていただき。" },
+    { ref: "Romans 1:16", en: "For I am not ashamed of the gospel, because it is the power of God that brings salvation to everyone who believes.", ja: "わたしは福音を恥としない。福音は、ユダヤ人をはじめ、ギリシア人にも、信じる者すべてに救いをもたらす神の力だからです。" },
+  ],
+};
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let currentBook = 'John';
+let currentIdx = 0;
+let recog = null, running = false;
+let practiceCount = 0;
+let history = [];
+
+// 書籍ボタン生成
+function buildBookBar(){
+  const bar = document.getElementById('book-bar');
+  bar.innerHTML = '';
+  Object.keys(BIBLE).forEach(book => {
+    const btn = document.createElement('button');
+    btn.className = 'book-btn' + (book === currentBook ? ' active' : '');
+    btn.textContent = book;
+    btn.onclick = () => { currentBook = book; currentIdx = 0; buildBookBar(); showVerse(); };
+    bar.appendChild(btn);
+  });
+}
+
+function showVerse(){
+  const v = BIBLE[currentBook][currentIdx];
+  document.getElementById('verse-ref').textContent = v.ref;
+  document.getElementById('verse-ja').textContent = v.ja;
+  // 単語をspanに分割
+  const words = v.en.split(' ');
+  document.getElementById('verse-en').innerHTML = words.map((w,i) =>
+    `<span class="word" id="w${i}">${w} </span>`
+  ).join('');
+  // スコアリセット
+  document.getElementById('score-area').style.display = 'none';
+  document.getElementById('heard-text').textContent = '';
+  setMicUI('idle');
+}
+
+function prevVerse(){
+  const verses = BIBLE[currentBook];
+  currentIdx = (currentIdx - 1 + verses.length) % verses.length;
+  showVerse();
+}
+function nextVerse(){
+  const verses = BIBLE[currentBook];
+  currentIdx = (currentIdx + 1) % verses.length;
+  showVerse();
+}
+
+// テキスト読み上げ
+function speakVerse(){
+  const v = BIBLE[currentBook][currentIdx];
+  const utt = new SpeechSynthesisUtterance(v.en);
+  utt.lang = 'en-US'; utt.rate = 0.85; utt.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utt);
+}
+
+function setMicUI(state){
+  const btn = document.getElementById('mic-btn');
+  const hint = document.getElementById('mic-hint');
+  btn.className = 'mic-btn ' + state;
+  if(state==='idle') hint.textContent = 'タップして発音練習を開始';
+  else if(state==='recording') hint.textContent = '録音中... 話し終えたら止まります';
+  else if(state==='done') hint.textContent = 'もう一度挑戦する';
+}
+
+function showErr(msg){
+  const e = document.getElementById('err-box');
+  e.textContent = msg; e.style.display = 'block';
+  setTimeout(()=>e.style.display='none', 5000);
+}
+
+// スコア計算（単語レベルの一致度）
+function calcScore(spoken, original){
+  const normalize = s => s.toLowerCase().replace(/[^a-z\s]/g,'').trim();
+  const spokenWords = normalize(spoken).split(/\s+/).filter(Boolean);
+  const origWords = normalize(original).split(/\s+/).filter(Boolean);
+
+  let matched = 0;
+  const origCopy = [...origWords];
+  spokenWords.forEach(sw => {
+    const idx = origCopy.indexOf(sw);
+    if(idx !== -1){ matched++; origCopy.splice(idx,1); }
+  });
+
+  // 単語ハイライト
+  origWords.forEach((ow, i) => {
+    const el = document.getElementById('w'+i);
+    if(!el) return;
+    const norm = ow.replace(/[^a-z]/gi,'').toLowerCase();
+    const found = spokenWords.some(sw => sw.replace(/[^a-z]/gi,'').toLowerCase() === norm);
+    el.className = 'word ' + (found ? 'correct' : 'wrong');
+  });
+
+  return Math.round((matched / origWords.length) * 100);
+}
+
+function toggleRec(){
+  if(!SR){ showErr('Chrome推奨: Web Speech APIに非対応です'); return; }
+  if(running){ recog && recog.stop(); return; }
+  startRec();
+}
+
+function startRec(){
+  recog = new SR();
+  recog.lang = 'en-US';
+  recog.interimResults = true;
+  recog.continuous = false;
+  recog.maxAlternatives = 3;
+
+  recog.onstart = () => { running = true; setMicUI('recording'); document.getElementById('score-area').style.display='none'; };
+
+  recog.onresult = (e) => {
+    let interim = '', final = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      if(e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('heard-text').textContent = '"' + (final || interim) + '"';
+    if(final){
+      const v = BIBLE[currentBook][currentIdx];
+      const score = calcScore(final, v.en);
+      showScore(score, v.ref);
+    }
+  };
+
+  recog.onerror = (e) => {
+    if(e.error==='not-allowed') showErr('マイクが拒否されました。ブラウザの設定から許可してください。');
+    else if(e.error!=='no-speech') showErr('エラー: '+e.error);
+  };
+
+  recog.onend = () => { running = false; setMicUI('done'); };
+  recog.start();
+}
+
+function showScore(score, ref){
+  const area = document.getElementById('score-area');
+  area.style.display = 'block';
+  document.getElementById('score-bar').style.width = score + '%';
+  document.getElementById('score-pct').textContent = score + '%';
+
+  let msg = '';
+  if(score >= 90) msg = '🎉 素晴らしい！完璧に近い発音です！';
+  else if(score >= 70) msg = '👍 よくできました！もう少しで完璧！';
+  else if(score >= 50) msg = '📖 練習を続けましょう！';
+  else msg = '🔊 お手本を聴いてもう一度挑戦！';
+  document.getElementById('score-msg').textContent = msg;
+
+  // 履歴追加
+  practiceCount++;
+  document.getElementById('progress-text').textContent = practiceCount + ' 回練習';
+  history.unshift({ ref, score });
+  if(history.length > 10) history.pop();
+  renderHistory();
+}
+
+function renderHistory(){
+  const list = document.getElementById('history-list');
+  if(history.length === 0){
+    list.innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:16px">まだ練習していません</div>';
+    return;
+  }
+  list.innerHTML = history.map(h => {
+    const cls = h.score >= 80 ? 'hi' : h.score >= 50 ? 'mid' : 'lo';
+    return `<div class="history-item">
+      <span class="history-ref">${h.ref}</span>
+      <span class="history-score ${cls}">${h.score}%</span>
+    </div>`;
+  }).join('');
+}
+
+// 初期化
+buildBookBar();
+showVerse();
+</script>
+</body>
+</html>
